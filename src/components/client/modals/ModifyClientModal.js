@@ -1,15 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import 'antd/dist/antd.min.css';
-import { Form, Modal, Input, Switch } from 'antd';
-import { useForm } from 'antd/lib/form/Form';
+import { Form, Modal, Input, Switch, Button } from 'antd';
+import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
+import { Spin } from 'antd';
+import * as utils from '../../../utils/generateUtil';
 
 function ModifyClientModal(props) {
     const { client, isOpen, onClose, onUpdate } = props;
-    const [form, setForm] = useState(null);
-    const [thisForm] = useForm();
-
+    const [form, setForm] = useState(client);
+    const [isLoading, setLoading] = useState(false);
+    const [thisForm] = Form.useForm();
 
     useEffect(() => {
+        initForm();
+    }, [isOpen]);
+
+    const initForm = () => {
         setForm({
             clientId: client?.clientId,
             name: client?.name,
@@ -19,10 +25,7 @@ function ModifyClientModal(props) {
             active: client?.active,
             clientSecret: client?.clientSecret
         });
-    }, [isOpen])
-
-
-
+    }
 
     const handleFormInputChange = (e) => {
         const value = e.target.value;
@@ -42,8 +45,13 @@ function ModifyClientModal(props) {
 
     //Handle confirm
     const onOk = () => {
-        onUpdate(client.id, form);
-        thisForm.resetFields();
+        console.log("=======> onOk")
+        setLoading(true);
+        setTimeout(() => {
+            onUpdate(client.id, form);
+            thisForm.resetFields();
+            setLoading(false);
+        }, 1000);
     }
 
     const onCancel = () => {
@@ -51,63 +59,61 @@ function ModifyClientModal(props) {
         onClose()
     }
 
+
+    const genNewClientSecret = () => {
+        const clientSecret = utils.genClientSecret();
+        setForm(pre => { return { ...pre, clientSecret } });
+    }
+
     return (
         <Modal
-            title="Modify client"
+            title="Update client"
             visible={isOpen}
-            okButtonProps={{ form: 'modifyClient', key: 'submit', htmlType: 'submit', type: 'primary' }}
-            onOk={thisForm.submit}
-            onCancel={onCancel}
-            onClose={onCancel}
-            bodyStyle={{ height: "350px" }}
+            okButtonProps={{
+                form: 'modifyClient',
+                key: 'submit',
+                htmlType: 'submit',
+                type: 'primary',
+                loading: isLoading && <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />
+            }}
+            onOk={() => thisForm.submit}
+            onCancel={() => onCancel()}
+            onClose={() => onCancel()}
+            bodyStyle={{ height: "380px" }}
         >
             <Form
                 labelCol={{
                     span: 6,
                 }}
                 wrapperCol={{
-                    span: 14,
+                    span: 15,
                 }}
                 layout="horizontal"
                 size='small'
                 form={thisForm}
-                onFinish={onOk}
+                onFinish={() => onOk()}
             >
                 <Form.Item
                     label="ClientId"
-                    //name="clientId"
-                    rules={[
-                        {
-                            required: true,
-                            message: 'Please input ClientId',
-                        },
-                    ]}
                 >
                     <Input
                         name="clientId"
                         value={form?.clientId}
-                        onChange={handleFormInputChange}
+                        disabled
                     />
                 </Form.Item>
                 <Form.Item
                     label="ClientSecret"
-                    //name="ClientSecret"
-                    rules={[
-                        {
-                            required: true,
-                            message: 'Please input ClientSecret',
-                        },
-                    ]}
                 >
                     <Input
                         name="clientSecret"
                         value={form?.clientSecret}
-                        onChange={handleFormInputChange}
+                        disabled
                     />
+                    <Button style={{ marginLeft: '20px', position: 'absolute' }} onClick={() => genNewClientSecret()} icon={<ReloadOutlined />}></Button>
                 </Form.Item>
                 <Form.Item
                     label="Client name"
-                    //name="Client name"
                     rules={[
                         {
                             required: true,
@@ -124,7 +130,6 @@ function ModifyClientModal(props) {
                 </Form.Item>
                 <Form.Item
                     label="RedirectURI"
-                    //name="RedirectURI"
                     rules={[
                         {
                             required: true,
@@ -141,11 +146,10 @@ function ModifyClientModal(props) {
                 </Form.Item>
                 <Form.Item
                     label="Via"
-                    //name="Via"
                     rules={[
                         {
                             required: true,
-                            message: 'Please input RedirectURI',
+                            message: 'Please input Via',
                         },
                     ]}
                 >
@@ -177,9 +181,6 @@ function ModifyClientModal(props) {
     )
 }
 
-ModifyClientModal.propTypes = {
-
-}
 
 export default ModifyClientModal
 

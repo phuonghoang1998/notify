@@ -12,9 +12,7 @@ function Topbar(props) {
                 <Col span={18}>
                 </Col>
                 <Col span={3}>
-                    <Button type="primary" danger style={{ marginLeft: "40px" }} >
-                        Logout
-                    </Button>
+                    <Button type="primary" danger style={{ float: "right", marginTop: "16px" }} >Logout</Button>
                 </Col>
             </Row>
         </Header>
